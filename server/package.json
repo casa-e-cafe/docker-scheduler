@@ -1,0 +1,15 @@
+{
+  "name": "cron-scheduler",
+  "version": "1.0.0",
+  "description": "A simple docker cron scheduler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "Roberto Alegro",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
