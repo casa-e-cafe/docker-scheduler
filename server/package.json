@@ -10,6 +10,10 @@
   "author": "Roberto Alegro",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.15.3"
+    "@types/node": "^8.0.19",
+    "body-parser": "^1.17.2",
+    "cron-parser": "^2.4.1",
+    "express": "^4.15.3",
+    "tern": "^0.21.0"
   }
 }

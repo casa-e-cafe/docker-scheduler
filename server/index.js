@@ -1,41 +1,20 @@
-const http = require('http');
-const fs = require('fs');
-const express = require('express');
-const path = require('path');
+const HTTP = require('http');
+const BodyParser = require('body-parser');
+const Express = require('express');
+const CronParser = require('cron-parser');
+const Cron = require('./cron');
+
 const PORT = process.env.PORT || 3000;
-const CRONS_PATH = process.env.CRONS_PATH || '/usr/src/cron/schedules'
-const CRON_CONFIG = "cron.conf";
-const CRON_SERVICE = "service.sh"
+const ENVIRONMENT = process.env.ENVIRONMENT || 'DEVELOPMENT';
 
-const app = express();
+const app = Express();
 
-function readFilePromise(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, (err, data) => {
-            if (err) reject(err);
-            else resolve(data);
-        })
-    })
-}
+app.use(BodyParser.urlencoded({
+    extended: true
+}));
+app.use(BodyParser.json());
 
-function cronDirectories() {
-    return new Promise((accept, reject) => {
-        fs.readdir(CRONS_PATH, (err, files) => {
-            if (err) {
-                console.log('faile to read directory:', CRONS_PATH);
-                resp.statusCode = 500;
-                resp.send({ 'success': false, 'error': 'failed to read cron directory' });
-                reject(err);
-                return;
-            }
-            const directories = files.filter(file => {
-                const stats = fs.statSync(path.join(CRONS_PATH, file));
-                return stats.isDirectory();
-            })
-            accept(directories);
-        });
-    });
-}
+app.use(Express.static('public'));
 
 // Response header middleware
 app.use((req, resp, next) => {
@@ -43,33 +22,77 @@ app.use((req, resp, next) => {
     next();
 });
 
+function developmentOnly(req, resp, next) {
+    if (ENVIRONMENT.includes('PROD')) {
+        resp.statusCode = 405;
+        resp.send({
+            error: "Operation not permitted in production"
+        });
+    } else {
+        next();
+    }
+}
+
+function parseJobRequest(req, resp, next) {
+    const name = req.body.name;
+    const script = req.body.script;
+    const cronExpr = req.body.cron;
+    let cron = null;
+    try {
+        cron = CronParser.parseExpression(cronExpr);
+    } catch (err) {
+        resp.statusCode = 400;
+        resp.send({
+            error: err.message
+        });
+        return;
+    }
+    req.job = {
+        name: name,
+        cronExpr: cronExpr,
+        cron: cron,
+        script: script
+    };
+    next();
+}
+
 app.get('/jobs', (req, resp, next) => {
-    cronDirectories().then(directories => {
-        const jobPromises = directories.map(dir => {
-            return new Promise((resolve, reject) => {
-                const job = {
-                    name: path.basename(dir),
-                    cron: '',
-                    script: ''
-                };
-                Promise.all([
-                    readFilePromise(path.join(CRONS_PATH, dir, CRON_CONFIG)),
-                    readFilePromise(path.join(CRONS_PATH, dir, CRON_SERVICE))
-                ]).then(([cron, script]) => {
-                    job.cron = cron.toString();
-                    job.script = script.toString();
-                }).catch(err => {
-                    job.cron = "Unable to find cron data";
-                    job.script = "Unable to find cron data";
-                }).then(() => {
-                    resolve(job);
-                });
+    Cron.getJobs().then(jobs => {
+        resp.send(jobs);
+    }).catch(err => {
+        resp.statusCode = 500;
+        resp.send({error: err.message});
+    });
+});
+
+app.post('/jobs', developmentOnly, parseJobRequest, (req, resp, next) => {
+    Cron.updateJob(req.job, false)
+        .then(response => resp.send(response))
+        .catch(err => {
+            resp.statusCode = 500;
+            resp.send({error: err.message});
+        });
+});
+
+app.put('/jobs', developmentOnly, parseJobRequest, (req, resp, next) => {
+    Cron.getJobs().then(existingJobs => {
+        if (existingJobs[req.job.name]) {
+            resp.statusCode = 403;
+            resp.send({
+                error: "Job already exists"
             });
-        });
-        Promise.all(jobPromises).then(jobs => {
-            resp.statusCode = 200;
-            resp.send(jobs);
-        });
+        } else {
+            Cron.updateJob(req.job)
+                .then(response => resp.send(response))
+                .catch(err => {
+                    resp.statusCode = 500;
+                    resp.send({error: err.message});
+                });
+        }
+    }).catch(err => {
+        console.log('deu ruim no getJobs:', JSON.stringify(err));
+        resp.statusCode = 500;
+        resp.send({error: err.message});
     });
 });
 
