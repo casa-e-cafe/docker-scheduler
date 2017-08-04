@@ -5,15 +5,24 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "babel web -d public"
   },
   "author": "Roberto Alegro",
   "license": "MIT",
   "dependencies": {
-    "@types/node": "^8.0.19",
     "body-parser": "^1.17.2",
     "cron-parser": "^2.4.1",
     "express": "^4.15.3",
+    "jquery": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.2.10",
+    "@types/node": "^8.0.19",
+    "babel-cli": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-react": "^6.24.1",
+    "eslint-plugin-react": "^7.1.0",
     "tern": "^0.21.0"
   }
 }
