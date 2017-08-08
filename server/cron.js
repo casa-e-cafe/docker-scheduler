@@ -71,9 +71,10 @@ class Cron {
                 if (err && (create || err.errno !== EEXIST)) { reject(err); }
                 const config = Path.join(jobPath, CRON_CONFIG);
                 const service = Path.join(jobPath, CRON_SERVICE);
+                const script = job.script.replace(/\r\n|\r|\n/g, '\n');
                 Promise.all([
                     FS.writeFilePromise(config, job.cronExpr),
-                    FS.writeFilePromise(service, job.script)
+                    FS.writeFilePromise(service, script, {mode: '755'})
                 ]).then(() =>
                     this.updateCrontab().then(() =>
                         resolve({
@@ -85,6 +86,11 @@ class Cron {
                 ).catch(reject);
             });
         });
+    }
+
+    deleteJob(job) {
+        const jobPath = Path.join(CRONS_PATH, job);
+        return FS.remove(jobPath);
     }
 
     updateCrontab() {

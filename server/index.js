@@ -56,6 +56,14 @@ function parseJobRequest(req, resp, next) {
     next();
 }
 
+app.delete('/jobs', (req, resp, next) => {
+    Cron.deleteJob(req.query.name).then(() => {
+        resp.send({success: true});
+    }).catch(err => {
+        resp.send({success: false});
+    });
+});
+
 app.get('/jobs', (req, resp, next) => {
     Cron.getJobs().then(jobs => {
         resp.send(jobs);
@@ -98,4 +106,5 @@ app.put('/jobs', developmentOnly, parseJobRequest, (req, resp, next) => {
 
 const server = app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
+    console.log('changed');
 });
