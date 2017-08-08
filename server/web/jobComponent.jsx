@@ -1,5 +1,5 @@
-function jobComponent(header, cron, script, index) {
-    const scriptTextArea = <textarea id={'job' + index + 'script'} class="panel-body">
+function jobComponent(header, cron, script, index, parent) {
+    const scriptTextArea = <textarea id={'job' + index + 'script'} class="panel-body" name="script">
         {script}
     </textarea>;
 
@@ -18,7 +18,7 @@ function jobComponent(header, cron, script, index) {
     const deleteButton = <button class="btn btn-md btn-danger button" >Delete</button>;
 
     const collapse = <div id={'job' + index} class="collapse panel-collapse">
-            <form id={'job' + index} class="jobBox">
+            <form id={'job' + index + 'form'} class="jobBox">
                 <div class="form-group col-8">
                     <label for={'name' + index} class="col-2">Name:</label>
                     {nameInput}
@@ -46,7 +46,11 @@ function jobComponent(header, cron, script, index) {
         {collapse}
     </div>;
 
-    const editor = CodeMirror.fromTextArea(scriptTextArea, codeMirrorOptions(true));
+    parent.append($(output));
+
+    const coisas = document.getElementById('job' + index + 'script');
+
+    const editor = CodeMirror.fromTextArea(coisas, codeMirrorOptions(true));
     editor.on('focus', (instance, e) => {
         instance.refresh();
     });
@@ -64,7 +68,6 @@ function jobComponent(header, cron, script, index) {
             $(editButton).addClass('btn-danger');
             $(saveEditionButton).attr('disabled', false);
             $(deleteButton).attr('disabled', true);
-            $(nameInput).attr('readonly', false);
             $(cronInput).attr('readonly', false);
             editor.setOption('readOnly', false);
         } else {
@@ -74,8 +77,6 @@ function jobComponent(header, cron, script, index) {
             $(editButton).addClass('btn-primary');
             $(saveEditionButton).attr('disabled', true);
             $(deleteButton).attr('disabled', false);
-            $(nameInput).attr('readonly', true);
-            $(nameInput).val(header);
             $(cronInput).attr('readonly', true);
             $(cronInput).val(cron);
             editor.setValue(script);
@@ -84,5 +85,23 @@ function jobComponent(header, cron, script, index) {
         return false;
     });
 
-    return $(output);
+    $(saveEditionButton).click(e => {
+        e.preventDefault();
+        $(e.target).attr('disabled', true);
+        $.ajax({
+            async: true,
+            url: "/jobs",
+            method: "POST",
+            data: $('#job' + index + 'form').serialize(),
+            success: (response, status, xhr) => {
+                $(e.target).attr('disabled', false);
+                parent.empty();
+                updateJobs(parent);
+            },
+            error: (xhr, status, error) => {
+                $(e.target).attr('disabled', false);
+            }
+        });
+        return false;
+    });
 }
