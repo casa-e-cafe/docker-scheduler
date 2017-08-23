@@ -2,7 +2,4 @@
 
 crond &
 
-npm start &
-
-bash
-
+npm start
