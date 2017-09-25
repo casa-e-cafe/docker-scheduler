@@ -34,7 +34,7 @@ function developmentOnly(req, resp, next) {
 }
 
 function parseJobRequest(req, resp, next) {
-    const name = req.body.name;
+    const name = req.body.name.replace(' ', '-');
     const script = req.body.script;
     const cronExpr = req.body.cron;
     let cron = null;
@@ -56,10 +56,11 @@ function parseJobRequest(req, resp, next) {
     next();
 }
 
-app.delete('/jobs', (req, resp, next) => {
+app.delete('/jobs', developmentOnly, (req, resp, next) => {
     Cron.deleteJob(req.query.name).then(() => {
         resp.send({success: true});
     }).catch(err => {
+        resp.statusCode = 500;
         resp.send({success: false});
     });
 });

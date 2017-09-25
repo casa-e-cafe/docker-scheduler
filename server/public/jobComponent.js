@@ -131,6 +131,24 @@ function jobComponent(header, cron, script, index, parent) {
         return false;
     });
 
+    $(deleteButton).click(e => {
+        e.preventDefault();
+        $(e.target).attr('disabled', true);
+        $.ajax({
+            async: true,
+            url: "/jobs?name=" + header,
+            method: "DELETE",
+            success: (response, status, xhr) => {
+                $(e.target).attr('disabled', false);
+                parent.empty();
+                updateJobs(parent);
+            },
+            error: (xhr, status, error) => {
+                $(e.target).attr('disabled', false);
+            }
+        });
+    });
+
     $(saveEditionButton).click(e => {
         e.preventDefault();
         $(e.target).attr('disabled', true);

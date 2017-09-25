@@ -90,7 +90,11 @@ class Cron {
 
     deleteJob(job) {
         const jobPath = Path.join(CRONS_PATH, job);
-        return FS.remove(jobPath);
+        return new Promise((resolve, reject) => {
+            FS.remove(jobPath).then(() => {
+                this.updateCrontab().then(() => resolve(job)).catch(reject);
+            }).catch(reject);
+        });
     }
 
     updateCrontab() {
