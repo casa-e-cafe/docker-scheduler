@@ -34,7 +34,7 @@ function developmentOnly(req, resp, next) {
 }
 
 function parseJobRequest(req, resp, next) {
-    const name = req.body.name.replace(' ', '-');
+    const name = req.body.name.replace(/ /g, '-');
     const script = req.body.script;
     const cronExpr = req.body.cron;
     let cron = null;

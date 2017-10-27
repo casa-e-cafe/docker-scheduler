@@ -31,46 +31,36 @@ $(document).ready(() => {
                 newScriptEditor.setValue('#!/bin/bash\n');
                 jobsList.empty();
                 updateJobs(jobsList);
-                $(e.target).prepend(React.createElement(
-                    'div',
-                    { 'class': 'alert alert-success alert-dismissable fade in' },
-                    React.createElement(
-                        'a',
-                        { href: '#', 'class': 'close', 'data-dismiss': 'alert', 'aria-label': 'close' },
-                        '\xD7'
-                    ),
-                    React.createElement(
-                        'strong',
-                        null,
-                        'Success!'
-                    ),
-                    ' Created job ',
-                    xhr.responseJSON.name
-                ));
+                $(e.target).prepend(alertMessage("Success", "Created job " + xhr.responseJSON.name));
             },
             error: (xhr, status, error) => {
                 $(e.target).find('input[type=submit]').attr('disabled', false);
-                $(e.target).prepend(React.createElement(
-                    'div',
-                    { 'class': 'alert alert-danger alert-dismissable fade in' },
-                    React.createElement(
-                        'a',
-                        { href: '#', 'class': 'close', 'data-dismiss': 'alert', 'aria-label': 'close' },
-                        '\xD7'
-                    ),
-                    React.createElement(
-                        'strong',
-                        null,
-                        'Error!'
-                    ),
-                    ' ',
-                    xhr.responseJSON.error
-                ));
+                $(e.target).prepend(alertMessage("Error", xhr.responseJSON.error));
             }
         });
         return 0;
     });
 });
+
+function alertMessage(type, message) {
+    return React.createElement(
+        'div',
+        { 'class': 'alert alert-{type.toLowerCase()} alert-dismissable fade in' },
+        React.createElement(
+            'a',
+            { href: '#', 'class': 'close', 'data-dismiss': 'alert', 'aria-label': 'close' },
+            '\xD7'
+        ),
+        React.createElement(
+            'strong',
+            null,
+            type,
+            '!'
+        ),
+        ' ',
+        message
+    );
+}
 
 function updateJobs(parentContainer) {
     $.ajax({

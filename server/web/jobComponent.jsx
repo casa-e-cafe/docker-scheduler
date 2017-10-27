@@ -48,11 +48,12 @@ function jobComponent(header, cron, script, index, parent) {
 
     parent.append($(output));
 
-    const coisas = document.getElementById('job' + index + 'script');
-
-    const editor = CodeMirror.fromTextArea(coisas, codeMirrorOptions(true));
+    const editor = CodeMirror.fromTextArea(scriptTextArea, codeMirrorOptions(true));
     editor.on('focus', (instance, e) => {
         instance.refresh();
+    });
+    editor.on('change', (instance, e) => {
+        $(scriptTextArea).text(instance.getValue());
     });
 
     $(output).on('shown.bs.collapse', (e) => {
