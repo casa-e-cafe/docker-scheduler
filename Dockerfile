@@ -3,7 +3,8 @@ RUN mkdir -p /usr/src/cron; \
 apk add --no-cache bash; \
 apk add --no-cache coreutils; \
 apk add --no-cache docker; \
-apk add --no-cache curl
+apk add --no-cache curl; \
+apk add --no-cache openssh-client
 
 WORKDIR /usr/src/cron
 
