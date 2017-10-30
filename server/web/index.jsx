@@ -33,26 +33,23 @@ $(document).ready(() => {
                 newScriptEditor.setValue('#!/bin/bash\n');
                 jobsList.empty();
                 updateJobs(jobsList);
-                $(e.target).prepend(
-                    <div class="alert alert-success alert-dismissable fade in">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                        <strong>Success!</strong> Created job {xhr.responseJSON.name}
-                    </div>
-                );
+                $(e.target).prepend(alertMessage("Success", "Created job " + xhr.responseJSON.name));
             },
             error: (xhr, status, error) => {
                 $(e.target).find('input[type=submit]').attr('disabled', false);
-                $(e.target).prepend(
-                    <div class="alert alert-danger alert-dismissable fade in">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                        <strong>Error!</strong> {xhr.responseJSON.error}
-                    </div>
-                );
+                $(e.target).prepend(alertMessage("Error", xhr.responseJSON.error));
             }
         });
         return 0;
     });
 });
+
+function alertMessage(type, message) {
+    return <div class="alert alert-{type.toLowerCase()} alert-dismissable fade in">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>{type}!</strong> {message}
+    </div>
+}
 
 function updateJobs(parentContainer) {
     $.ajax({
