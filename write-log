@@ -1,0 +1,16 @@
+#!/bin/bash
+
+LOG_GROUP=scheduler
+STREAM=test-stream
+if [ $# -ge 1 ]; then
+        STREAM=$1
+fi
+MESSAGE=${*:2}
+
+docker run --rm -d \
+        --log-driver=awslogs \
+        --log-opt awslogs-group="$LOG_GROUP" \
+        --log-opt awslogs-stream="$STREAM" \
+        cogniteev/echo \
+        echo "$MESSAGE" \
+        >/dev/null
